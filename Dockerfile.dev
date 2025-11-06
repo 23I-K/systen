@@ -1,0 +1,17 @@
+# Development image
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+# Копируем зависимости и устанавливаем их
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Копируем исходный код
+COPY . .
+
+EXPOSE 4200
+EXPOSE 49153  # Порт для live-reload [citation:3]
+
+# Ключ --poll решает проблему с hot-reload на Windows [citation:3]
+CMD ["npm", "run", "start", "--", "--host=0.0.0.0", "--poll=500"]

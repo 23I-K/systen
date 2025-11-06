@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Angular App - Development
+  angular-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"      # Dev Server
+      - "49153:49153"    # Live-reload port [citation:3]
+    volumes:
+      - './:/usr/src/app'           # Синхронизация исходного кода
+      - '/usr/src/app/node_modules' # Отдельный volume для node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true    # Решение для отслеживания изменений файлов [citation:1]
+    networks:
+      - app-network
+
+  # Angular App - Production
+  angular-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"  # SSR порт
+    networks:
+      - app-network
+
+  # Keycloak Service
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    command: start-dev
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
